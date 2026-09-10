@@ -1,3 +1,25 @@
+"""
+HVOS Base Edition - メインスクリプト
+
+0.1【公開】260908
+0.2【修正】260908
+修正箇所（104行目付近）： APIモデル名を旧モデル（gemini-2.5-flash）から新モデル（gemini-3.6-flash）へ変更。
+0.3【追加・修正】260911
+1. 文字化け・エンコードエラー対策:
+   sys.stdout / sys.stderr を UTF-8 に変更し、Windowsコンソールでの UnicodeEncodeError を防止。
+2. 連打・長押しの防止:
+   キーが完全に離されるまで待機するループを設置し、1回の押し込みにつき1回のみ反応。
+3. 強制クールダウン & 重複スレッド生成の停止:
+   一度実行されると 5秒間 は次のリクエストを受け付けず、is_processing 判定と合わせて無駄なスレッド生成とAPI重複呼び出しを物理的にブロック。
+"""
+
+import sys
+import io
+
+# 標準出力をUTF-8に変更（Windows環境でのUnicodeEncodeErrorを防止）
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 import os
 import time
 import socket
@@ -13,7 +35,7 @@ from google import genai
 # ==========================================
 # 🔑 APIキー設定（ここに取得したキーを貼り付けます）
 # ==========================================
-GEMINI_API_KEY = "ここに取得したAPIキーを入れる"
+
 
 app = Flask(__name__)
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
@@ -97,7 +119,7 @@ def execute_analysis():
         )
         img = Image.open(saved_img_path)
         
-        # ★ 最新推奨モデル 'gemini-3.6-flash' に修整
+        # ★ 最新推奨モデル 'gemini-2.5-flash'から'gemini-3.6-flash' に修整
         response = gemini_client.models.generate_content(
             model='gemini-3.6-flash',
             contents=[prompt, img]
@@ -160,14 +182,27 @@ def get_data():
 
 def start_keyboard_listener():
     print("▶ 【1】キーの監視を開始しました。")
-    pressed = False
+    last_execution_time = 0
+    cooldown_seconds = 5.0  # 強制クールダウン時間（5秒間は次のリクエストを遮断）
+
     while True:
         if keyboard.is_pressed("1") or keyboard.is_pressed("num 1"):
-            if not pressed:
-                pressed = True
-                threading.Thread(target=execute_analysis).start()
-        else:
-            pressed = False
+            current_time = time.time()
+            
+            # 【強制クールダウン & 無駄なスレッド生成の停止】
+            # 前回の実行から5秒以上経過している場合のみ処理を開始する
+            if current_time - last_execution_time > cooldown_seconds:
+                last_execution_time = current_time
+                
+                # 現在解析処理中でなければ、新しいスレッドを起動して解析を実行
+                if not is_processing:
+                    threading.Thread(target=execute_analysis).start()
+            
+            # 【連打・長押しの防止】
+            # キーが押されている間はループを止め、完全に指が離されるまで待機する
+            while keyboard.is_pressed("1") or keyboard.is_pressed("num 1"):
+                time.sleep(0.05)
+
         time.sleep(0.05)
 
 if __name__ == '__main__':
