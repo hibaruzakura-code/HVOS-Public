@@ -35,7 +35,7 @@ from google import genai
 # ==========================================
 # 🔑 APIキー設定（ここに取得したキーを貼り付けます）
 # ==========================================
-
+GEMINI_API_KEY = "ここに取得したAPIキーを入れる"
 
 app = Flask(__name__)
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
