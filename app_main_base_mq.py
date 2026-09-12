@@ -46,8 +46,8 @@ if not os.path.exists(IMAGE_SAVE_DIR):
 
 # スタンバイ完了時のメッセージ
 latest_result = {
-    "title": "HVOS Base Edition - スタンバイ完了",
-    "gemini_content": "【HVOS スタンバイOK！】\nキーボードの【1】を押すと、目の前の景色をGeminiが撮影＆解析します。\n\n※このシステムを試してみた感想や『こんな機能を追加したよ！』というアイデア・フィードバックがあれば、ぜひnoteコメントやSNSで教えてくださいね！",
+    "title": "HVOS Base Edition (MQ) - スタンバイ完了",
+    "gemini_content": "【HVOS (MQ) スタンバイOK！】\nキーボードの【1】を押すと、目の前の景色をGeminiが撮影＆解析します。\n\n※このシステムを試してみた感想や『こんな機能を追加したよ！』というアイデア・フィードバックがあれば、ぜひnoteコメントやSNSで教えてくださいね！",
     "timestamp": ""
 }
 
@@ -215,7 +215,7 @@ if __name__ == '__main__':
         local_ip = "127.0.0.1"
 
     print(f"\n==========================================")
-    print(f"=== HVOS Base Edition 稼働中 ===")
+    print(f"=== HVOS Base Edition (MQ) 稼働中 ===")
     print(f"・Questブラウザ用URL: http://{local_ip}:5000")
     print(f"==========================================\n")
 
